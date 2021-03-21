@@ -19,6 +19,9 @@ class Producer<K>(
                     buildTask("$partitionKey/$batchIndex/$taskIndex")
                 )
             }
+            if (millisBetweenBatches > 0) {
+                Thread.sleep(millisBetweenBatches)
+            }
         }
     }
 

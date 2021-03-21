@@ -2,28 +2,34 @@ package com.matthalstead.workdispatcher.benchmarks
 
 import com.matthalstead.workdispatcher.ElasticThreadPoolWorkDispatcher
 import com.matthalstead.workdispatcher.SeparateThreadPoolsWorkDispatcher
-import com.matthalstead.workdispatcher.Task
 import com.matthalstead.workdispatcher.WorkDispatcher
 
 class RunBenchmark(
-    val workDispatcher: WorkDispatcher<String>
+    val workDispatcher: WorkDispatcher<String>,
+    val numSmallProducers: Int
 ) {
 
-    val throttle = Throttle<String>(20)
-    val bigProducerTracker = TaskRunTracker()
-    val smallProducerTracker = TaskRunTracker()
+    private val throttle = Throttle<String>(20)
+    private val bigProducerTracker = TaskRunTracker()
+    private val smallProducerTracker = TaskRunTracker()
 
     fun run() {
+
+        println("Running implementation: ${workDispatcher.javaClass.simpleName}")
         val producers = buildProducers()
         val startTime = System.currentTimeMillis()
-        producers.forEach { it.run(workDispatcher) }
+
+        val producerThreads = producers.map{ producer -> Thread() { producer.run(workDispatcher) } }
+        producerThreads.forEach { it.start() }
+        producerThreads.forEach { it.join() }
+
 
         while (workDispatcher.hasWorkingTasks()) {
             Thread.sleep(10L)
         }
         val endTime = System.currentTimeMillis()
-        println("Implementation: ${workDispatcher.javaClass.simpleName}")
-        println("Run time: ${endTime - startTime}ms")
+        val duration = (endTime - startTime)
+        println("Run time: ${duration}ms")
         println("Peak thread count: ${workDispatcher.getPeakThreadCount()}")
         println("bigProducerTracker.start: ${bigProducerTracker.startTracker.getStats()}")
         println("bigProducerTracker.run: ${bigProducerTracker.runTracker.getStats()}")
@@ -38,13 +44,13 @@ class RunBenchmark(
             partitionKey = "BigProducer",
             numBatches = 10,
             tasksPerBatch = 1000,
-            millisBetweenBatches = 5000L,
+            millisBetweenBatches = 1000L,
             taskDurationMillis = 1L,
             throttle = throttle,
             taskRunTracker = bigProducerTracker
         )
 
-        val smallProducers = List(100) {
+        val smallProducers = List(numSmallProducers) {
             Producer(
                 partitionKey = "SmallProducer-$it",
                 numBatches = 100,
@@ -62,10 +68,12 @@ class RunBenchmark(
     companion object {
         @JvmStatic
         fun main(args: Array<String>) {
-            val runBenchmark = RunBenchmark( SeparateThreadPoolsWorkDispatcher( 10))
+            val numSmallProducers = 100
+            val runBenchmark = RunBenchmark( SeparateThreadPoolsWorkDispatcher( 10), numSmallProducers)
             runBenchmark.run()
-            val runBenchmark2 = RunBenchmark( ElasticThreadPoolWorkDispatcher(5, 500))
+            val runBenchmark2 = RunBenchmark( ElasticThreadPoolWorkDispatcher(5, 500), numSmallProducers)
             runBenchmark2.run()
+
         }
     }
 }
