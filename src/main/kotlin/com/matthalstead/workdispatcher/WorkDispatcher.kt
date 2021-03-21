@@ -5,6 +5,7 @@ interface WorkDispatcher<K> {
     fun enqueue(task: Task<K>)
 
     fun getTaskReport(): List<TaskReportRecord<K>>
+    fun hasWorkingTasks(): Boolean = getTaskReport().isNotEmpty()
 
     fun start() {}
     fun shutdown() {}

@@ -32,6 +32,11 @@ abstract class AbstractLocalWorkDispatcher<K>: WorkDispatcher<K> {
             taskMap.values.map { it.toTaskReportRecord() }
         }
 
+    override fun hasWorkingTasks(): Boolean =
+        mapReadLock.withLock {
+            taskMap.isNotEmpty()
+        }
+
     protected abstract fun doDispatch(
         workingTask: WorkingTask<K>,
         onStarted: (WorkingTask<K>) -> Unit,
