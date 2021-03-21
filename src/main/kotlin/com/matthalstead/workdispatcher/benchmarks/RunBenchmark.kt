@@ -9,6 +9,7 @@ class RunBenchmark(
     val workDispatcher: WorkDispatcher<String>
 ) {
 
+    val throttle = Throttle<String>(20)
     val bigProducerTracker = TaskRunTracker()
     val smallProducerTracker = TaskRunTracker()
 
@@ -38,6 +39,7 @@ class RunBenchmark(
             tasksPerBatch = 1000,
             millisBetweenBatches = 5000L,
             taskDurationMillis = 1L,
+            throttle = throttle,
             taskRunTracker = bigProducerTracker
         )
 
@@ -48,6 +50,7 @@ class RunBenchmark(
                 tasksPerBatch = 2,
                 millisBetweenBatches = 50L,
                 taskDurationMillis = 10L,
+                throttle = throttle,
                 taskRunTracker = smallProducerTracker
             )
         }
