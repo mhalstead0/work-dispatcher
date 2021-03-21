@@ -9,6 +9,8 @@ interface WorkDispatcher<K> {
 
     fun start() {}
     fun shutdown() {}
+
+    fun getPeakThreadCount(): Int
 }
 
 enum class TaskStatus { ENQUEUED, RUNNING }

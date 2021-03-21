@@ -19,6 +19,8 @@ class ThreadPoolWorkDispatcher<K>(val poolSize: Int): AbstractLocalWorkDispatche
         executorService = Executors.newFixedThreadPool(poolSize, threadFactory)
     }
 
+    override fun getPeakThreadCount() = poolSize
+
     override fun shutdown() {
         executorService!!.shutdown()
         executorService = null

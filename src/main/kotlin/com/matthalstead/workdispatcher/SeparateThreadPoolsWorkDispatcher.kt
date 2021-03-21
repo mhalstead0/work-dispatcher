@@ -9,6 +9,7 @@ import java.util.concurrent.atomic.AtomicLong
 class SeparateThreadPoolsWorkDispatcher<K>(val poolSizePerPartitionKey: Int): AbstractLocalWorkDispatcher<K>() {
 
     private val executorServiceMap = ConcurrentHashMap<K, ExecutorService>()
+    private val maxThreadCounter = MaxTracker(0)
 
     override fun shutdown() {
         executorServiceMap.values.forEach{ it.shutdown() }
@@ -40,7 +41,10 @@ class SeparateThreadPoolsWorkDispatcher<K>(val poolSizePerPartitionKey: Int): Ab
             t.isDaemon = true
             t
         }
+        maxThreadCounter.add(poolSizePerPartitionKey)
         return Executors.newFixedThreadPool(poolSizePerPartitionKey, threadFactory)
     }
+
+    override fun getPeakThreadCount() = maxThreadCounter.getMax()
 
 }

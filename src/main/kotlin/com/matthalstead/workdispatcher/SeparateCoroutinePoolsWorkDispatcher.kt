@@ -7,6 +7,7 @@ import java.util.concurrent.Executors
 class SeparateCoroutinePoolsWorkDispatcher<K>(val poolSizePerPartitionKey: Int): AbstractLocalWorkDispatcher<K>() {
 
     private val dispatcherMap = ConcurrentHashMap<K, CoroutineScopeAndDispatcher>()
+    private val maxThreadCounter = MaxTracker(0)
 
     override fun shutdown() {
         dispatcherMap.values.forEach{ it.coroutineDispatcher.close() }
@@ -30,10 +31,14 @@ class SeparateCoroutinePoolsWorkDispatcher<K>(val poolSizePerPartitionKey: Int):
     }
 
     private fun buildDispatcher(): CoroutineScopeAndDispatcher {
+        maxThreadCounter.add(poolSizePerPartitionKey)
         val coroutineDispatcher = Executors.newFixedThreadPool(poolSizePerPartitionKey).asCoroutineDispatcher()
         val coroutineScope = CoroutineScope(coroutineDispatcher)
         return CoroutineScopeAndDispatcher(coroutineScope, coroutineDispatcher)
     }
+
+
+    override fun getPeakThreadCount() = maxThreadCounter.getMax()
 
     private data class CoroutineScopeAndDispatcher(
         val coroutineScope: CoroutineScope,

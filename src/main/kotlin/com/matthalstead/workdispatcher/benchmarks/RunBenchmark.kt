@@ -24,6 +24,7 @@ class RunBenchmark(
         val endTime = System.currentTimeMillis()
         println("Implementation: ${workDispatcher.javaClass.simpleName}")
         println("Run time: ${endTime - startTime}ms")
+        println("Peak thread count: ${workDispatcher.getPeakThreadCount()}")
         println("bigProducerTracker.start: ${bigProducerTracker.startTracker.getStats()}")
         println("bigProducerTracker.run: ${bigProducerTracker.runTracker.getStats()}")
         println("bigProducerTracker.total: ${bigProducerTracker.totalTracker.getStats()}")

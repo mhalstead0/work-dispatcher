@@ -16,6 +16,8 @@ class ElasticThreadPoolWorkDispatcher<K>(val threadsPerPartition: Int, val commo
     private val partitionExecutorMap = mutableMapOf<K, PartitionExecutor<K>>()
     private val partitionExecutorMapLock: Lock = ReentrantLock()
 
+    private val threadCountTracker = MaxTracker(commonPoolSize)
+
     override fun start() {
         commonExecutor.start()
     }
@@ -39,8 +41,8 @@ class ElasticThreadPoolWorkDispatcher<K>(val threadsPerPartition: Int, val commo
         taskQueueLock.withLock {
             val queue = taskQueueMap.values.firstOrNull{ it.isNotEmpty() }
             return queue?.removeAt(0)
-
         }
+
     override fun doDispatch(
         workingTask: WorkingTask<K>,
         onStarted: (WorkingTask<K>) -> Unit,
@@ -57,6 +59,7 @@ class ElasticThreadPoolWorkDispatcher<K>(val threadsPerPartition: Int, val commo
             partitionExecutorMap.computeIfAbsent(partitionKey) {
                 val pe = PartitionExecutor(it, threadsPerPartition, queueFunction)
                 pe.start()
+                threadCountTracker.add(threadsPerPartition)
                 pe
             }
         }
@@ -65,6 +68,8 @@ class ElasticThreadPoolWorkDispatcher<K>(val threadsPerPartition: Int, val commo
         commonExecutor.signalAllThreads()
 
     }
+
+    override fun getPeakThreadCount() = threadCountTracker.getMax()
 
 
     private class TaskQueueEntry<K>(

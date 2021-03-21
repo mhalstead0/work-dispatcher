@@ -8,6 +8,7 @@ class CoroutinePoolWorkDispatcher<K>(val poolSize: Int): AbstractLocalWorkDispat
     private var coroutineDispatcher: ExecutorCoroutineDispatcher? = null
     private var coroutineScope: CoroutineScope? = null
 
+
     override fun start() {
         coroutineDispatcher = Executors.newFixedThreadPool(poolSize).asCoroutineDispatcher()
         coroutineScope = CoroutineScope(coroutineDispatcher!!)
@@ -19,6 +20,7 @@ class CoroutinePoolWorkDispatcher<K>(val poolSize: Int): AbstractLocalWorkDispat
         coroutineDispatcher = null
     }
 
+    override fun getPeakThreadCount() = poolSize
 
     override fun doDispatch(
         workingTask: WorkingTask<K>,
