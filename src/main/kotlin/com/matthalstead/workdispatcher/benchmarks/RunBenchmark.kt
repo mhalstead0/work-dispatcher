@@ -62,7 +62,7 @@ class RunBenchmark(
     companion object {
         @JvmStatic
         fun main(args: Array<String>) {
-            val runBenchmark = RunBenchmark( SeparateThreadPoolsWorkDispatcher( 50))
+            val runBenchmark = RunBenchmark( SeparateThreadPoolsWorkDispatcher( 10))
             runBenchmark.run()
             val runBenchmark2 = RunBenchmark( ElasticThreadPoolWorkDispatcher(5, 500))
             runBenchmark2.run()
