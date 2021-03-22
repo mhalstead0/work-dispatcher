@@ -1,6 +1,7 @@
 package com.matthalstead.workdispatcher.benchmarks
 
 import com.matthalstead.workdispatcher.ElasticThreadPoolWorkDispatcher
+import com.matthalstead.workdispatcher.SeparateCoroutinePoolsWorkDispatcher
 import com.matthalstead.workdispatcher.SeparateThreadPoolsWorkDispatcher
 import com.matthalstead.workdispatcher.WorkDispatcher
 
@@ -106,6 +107,9 @@ class RunBenchmark(
                 DispatcherType.SEPARATE_THREAD_POOLS -> SeparateThreadPoolsWorkDispatcher(
                     poolSizePerPartitionKey = ceilDivide(targetThreadCount, partitionCount)
                 )
+                DispatcherType.SEPARATE_COROUTINE_POOLS -> SeparateCoroutinePoolsWorkDispatcher(
+                    poolSizePerPartitionKey = ceilDivide(targetThreadCount, partitionCount)
+                )
                 DispatcherType.ELASTIC_THREAD_POOL -> {
                     val perPartition = 3
                     val remaining = targetThreadCount - (perPartition*partitionCount)
@@ -122,6 +126,7 @@ class RunBenchmark(
 
     enum class DispatcherType {
         SEPARATE_THREAD_POOLS,
+        SEPARATE_COROUTINE_POOLS,
         ELASTIC_THREAD_POOL
     }
 }
