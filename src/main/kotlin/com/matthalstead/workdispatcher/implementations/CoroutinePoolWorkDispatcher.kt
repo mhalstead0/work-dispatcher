@@ -1,4 +1,4 @@
-package com.matthalstead.workdispatcher
+package com.matthalstead.workdispatcher.implementations
 
 import kotlinx.coroutines.*
 import java.util.concurrent.Executors
@@ -23,9 +23,9 @@ class CoroutinePoolWorkDispatcher<K>(val poolSize: Int): AbstractLocalWorkDispat
     override fun getPeakThreadCount() = poolSize
 
     override fun doDispatch(
-        workingTask: WorkingTask<K>,
-        onStarted: (WorkingTask<K>) -> Unit,
-        onCompleted: (WorkingTask<K>) -> Unit
+            workingTask: WorkingTask<K>,
+            onStarted: (WorkingTask<K>) -> Unit,
+            onCompleted: (WorkingTask<K>) -> Unit
     ) {
         coroutineScope!!.launch {
             try {

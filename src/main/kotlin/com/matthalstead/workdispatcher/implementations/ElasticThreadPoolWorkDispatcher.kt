@@ -1,4 +1,4 @@
-package com.matthalstead.workdispatcher
+package com.matthalstead.workdispatcher.implementations
 
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
@@ -44,9 +44,9 @@ class ElasticThreadPoolWorkDispatcher<K>(val threadsPerPartition: Int, val commo
         }
 
     override fun doDispatch(
-        workingTask: WorkingTask<K>,
-        onStarted: (WorkingTask<K>) -> Unit,
-        onCompleted: (WorkingTask<K>) -> Unit
+            workingTask: WorkingTask<K>,
+            onStarted: (WorkingTask<K>) -> Unit,
+            onCompleted: (WorkingTask<K>) -> Unit
     ) {
         val partitionKey = workingTask.task.partitionKey
         taskQueueLock.withLock {
@@ -73,9 +73,9 @@ class ElasticThreadPoolWorkDispatcher<K>(val threadsPerPartition: Int, val commo
 
 
     private class TaskQueueEntry<K>(
-        val workingTask: WorkingTask<K>,
-        private val onStarted: (WorkingTask<K>) -> Unit,
-        private val onCompleted: (WorkingTask<K>) -> Unit
+            val workingTask: WorkingTask<K>,
+            private val onStarted: (WorkingTask<K>) -> Unit,
+            private val onCompleted: (WorkingTask<K>) -> Unit
     ) {
         fun started() = onStarted(workingTask)
         fun completed() = onCompleted(workingTask)

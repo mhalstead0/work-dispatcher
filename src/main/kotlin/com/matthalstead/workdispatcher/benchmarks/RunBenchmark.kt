@@ -1,8 +1,8 @@
 package com.matthalstead.workdispatcher.benchmarks
 
-import com.matthalstead.workdispatcher.ElasticThreadPoolWorkDispatcher
-import com.matthalstead.workdispatcher.SeparateCoroutinePoolsWorkDispatcher
-import com.matthalstead.workdispatcher.SeparateThreadPoolsWorkDispatcher
+import com.matthalstead.workdispatcher.implementations.ElasticThreadPoolWorkDispatcher
+import com.matthalstead.workdispatcher.implementations.SeparateCoroutinePoolsWorkDispatcher
+import com.matthalstead.workdispatcher.implementations.SeparateThreadPoolsWorkDispatcher
 import com.matthalstead.workdispatcher.WorkDispatcher
 
 class RunBenchmark(

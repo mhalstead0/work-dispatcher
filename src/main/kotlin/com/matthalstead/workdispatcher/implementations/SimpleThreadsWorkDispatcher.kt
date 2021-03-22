@@ -1,20 +1,14 @@
-package com.matthalstead.workdispatcher
-
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-
-class SimpleCoroutineWorkDispatcher<K>: AbstractLocalWorkDispatcher<K>() {
-
-    private val coroutineScope = GlobalScope
+package com.matthalstead.workdispatcher.implementations
+class SimpleThreadsWorkDispatcher<K>: AbstractLocalWorkDispatcher<K>() {
 
     private val maxThreadCount = MaxTracker(0)
 
     override fun doDispatch(
-        workingTask: WorkingTask<K>,
-        onStarted: (WorkingTask<K>) -> Unit,
-        onCompleted: (WorkingTask<K>) -> Unit
+            workingTask: WorkingTask<K>,
+            onStarted: (WorkingTask<K>) -> Unit,
+            onCompleted: (WorkingTask<K>) -> Unit
     ) {
-        coroutineScope.launch {
+        val r = Runnable{
             maxThreadCount.increment()
             try {
                 onStarted(workingTask)
@@ -24,9 +18,10 @@ class SimpleCoroutineWorkDispatcher<K>: AbstractLocalWorkDispatcher<K>() {
                 onCompleted(workingTask)
             }
         }
+        Thread(r).start()
     }
 
-
     override fun getPeakThreadCount() = maxThreadCount.getMax()
+
 
 }

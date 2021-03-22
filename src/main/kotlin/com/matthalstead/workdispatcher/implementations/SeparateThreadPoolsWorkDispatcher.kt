@@ -1,4 +1,4 @@
-package com.matthalstead.workdispatcher
+package com.matthalstead.workdispatcher.implementations
 
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ExecutorService
@@ -17,9 +17,9 @@ class SeparateThreadPoolsWorkDispatcher<K>(val poolSizePerPartitionKey: Int): Ab
     }
 
     override fun doDispatch(
-        workingTask: WorkingTask<K>,
-        onStarted: (WorkingTask<K>) -> Unit,
-        onCompleted: (WorkingTask<K>) -> Unit
+            workingTask: WorkingTask<K>,
+            onStarted: (WorkingTask<K>) -> Unit,
+            onCompleted: (WorkingTask<K>) -> Unit
     ) {
         val r = Runnable{
             try {
@@ -37,7 +37,7 @@ class SeparateThreadPoolsWorkDispatcher<K>(val poolSizePerPartitionKey: Int): Ab
     private fun buildExecutor(partitionKey: K): ExecutorService {
         val threadIndexGenerator = AtomicLong(0L)
         val threadFactory = ThreadFactory { r ->
-            val t = Thread(r, "com.matthalstead.workdispatcher.ThreadPoolWorkDispatcher-$partitionKey-${threadIndexGenerator.incrementAndGet()}")
+            val t = Thread(r, "com.matthalstead.workdispatcher.implementations.ThreadPoolWorkDispatcher-$partitionKey-${threadIndexGenerator.incrementAndGet()}")
             t.isDaemon = true
             t
         }

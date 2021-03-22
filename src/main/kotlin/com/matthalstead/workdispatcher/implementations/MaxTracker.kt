@@ -1,4 +1,4 @@
-package com.matthalstead.workdispatcher
+package com.matthalstead.workdispatcher.implementations
 
 import java.util.concurrent.atomic.AtomicInteger
 

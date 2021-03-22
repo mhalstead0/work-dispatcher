@@ -10,4 +10,4 @@ This contains a few different algorithms for dispatching work to pools of worker
 of common processors that can use any partition key.
    
 # Note
-THis is not production-level code; these are sample algorithms for benchmarking purposes.
+This is not production-level code; these are sample algorithms for benchmarking purposes.

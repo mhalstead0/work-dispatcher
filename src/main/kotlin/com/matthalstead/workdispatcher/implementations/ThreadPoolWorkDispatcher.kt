@@ -1,4 +1,4 @@
-package com.matthalstead.workdispatcher
+package com.matthalstead.workdispatcher.implementations
 
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -12,7 +12,7 @@ class ThreadPoolWorkDispatcher<K>(val poolSize: Int): AbstractLocalWorkDispatche
     override fun start() {
         val threadIndexGenerator = AtomicLong(0L)
         val threadFactory = ThreadFactory { r ->
-            val t = Thread(r, "com.matthalstead.workdispatcher.ThreadPoolWorkDispatcher-${threadIndexGenerator.incrementAndGet()}")
+            val t = Thread(r, "com.matthalstead.workdispatcher.implementations.ThreadPoolWorkDispatcher-${threadIndexGenerator.incrementAndGet()}")
             t.isDaemon = true
             t
         }
@@ -27,9 +27,9 @@ class ThreadPoolWorkDispatcher<K>(val poolSize: Int): AbstractLocalWorkDispatche
     }
 
     override fun doDispatch(
-        workingTask: WorkingTask<K>,
-        onStarted: (WorkingTask<K>) -> Unit,
-        onCompleted: (WorkingTask<K>) -> Unit
+            workingTask: WorkingTask<K>,
+            onStarted: (WorkingTask<K>) -> Unit,
+            onCompleted: (WorkingTask<K>) -> Unit
     ) {
         val r = Runnable{
             try {

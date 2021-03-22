@@ -1,4 +1,4 @@
-package com.matthalstead.workdispatcher
+package com.matthalstead.workdispatcher.implementations
 
 import kotlinx.coroutines.*
 import java.util.concurrent.ConcurrentHashMap
@@ -15,9 +15,9 @@ class SeparateCoroutinePoolsWorkDispatcher<K>(val poolSizePerPartitionKey: Int):
     }
 
     override fun doDispatch(
-        workingTask: WorkingTask<K>,
-        onStarted: (WorkingTask<K>) -> Unit,
-        onCompleted: (WorkingTask<K>) -> Unit
+            workingTask: WorkingTask<K>,
+            onStarted: (WorkingTask<K>) -> Unit,
+            onCompleted: (WorkingTask<K>) -> Unit
     ) {
         val scopeAndDispatcher = dispatcherMap.computeIfAbsent(workingTask.task.partitionKey) { buildDispatcher() }
         scopeAndDispatcher.coroutineScope.launch {

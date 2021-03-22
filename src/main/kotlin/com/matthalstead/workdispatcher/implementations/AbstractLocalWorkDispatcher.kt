@@ -1,5 +1,9 @@
-package com.matthalstead.workdispatcher
+package com.matthalstead.workdispatcher.implementations
 
+import com.matthalstead.workdispatcher.Task
+import com.matthalstead.workdispatcher.TaskReportRecord
+import com.matthalstead.workdispatcher.TaskStatus
+import com.matthalstead.workdispatcher.WorkDispatcher
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.locks.ReadWriteLock
 import java.util.concurrent.locks.ReentrantReadWriteLock
@@ -38,17 +42,17 @@ abstract class AbstractLocalWorkDispatcher<K>: WorkDispatcher<K> {
         }
 
     protected abstract fun doDispatch(
-        workingTask: WorkingTask<K>,
-        onStarted: (WorkingTask<K>) -> Unit,
-        onCompleted: (WorkingTask<K>) -> Unit
+            workingTask: WorkingTask<K>,
+            onStarted: (WorkingTask<K>) -> Unit,
+            onCompleted: (WorkingTask<K>) -> Unit
     )
 
 
 
     protected class WorkingTask<K>(
-        val id: Long,
-        val task: Task<K>,
-        var started: Boolean = false
+            val id: Long,
+            val task: Task<K>,
+            var started: Boolean = false
     ) {
         fun toTaskReportRecord() = TaskReportRecord<K>(
             partitionKey = task.partitionKey,
