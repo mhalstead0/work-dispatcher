@@ -5,11 +5,14 @@ import com.matthalstead.workdispatcher.SeparateThreadPoolsWorkDispatcher
 import com.matthalstead.workdispatcher.WorkDispatcher
 
 class RunBenchmark(
-    val workDispatcher: WorkDispatcher<String>,
-    val numSmallProducers: Int
+    private val workDispatcher: WorkDispatcher<String>,
+    private val numLargeProducers: Int,
+    private val numSmallProducers: Int,
+    private val largeProducerBatchSize: Int,
+    private val throttleSize: Int
 ) {
 
-    private val throttle = Throttle<String>(20)
+    private val throttle = Throttle<String>(throttleSize)
     private val bigProducerTracker = TaskRunTracker()
     private val smallProducerTracker = TaskRunTracker()
 
@@ -40,15 +43,17 @@ class RunBenchmark(
     }
 
     private fun buildProducers(): List<Producer<String>> {
-        val bigProducer = Producer(
-            partitionKey = "BigProducer",
-            numBatches = 10,
-            tasksPerBatch = 1000,
-            millisBetweenBatches = 1000L,
-            taskDurationMillis = 1L,
-            throttle = throttle,
-            taskRunTracker = bigProducerTracker
-        )
+        val bigProducers = List(numLargeProducers) {
+            Producer(
+                partitionKey = "BigProducer-$it",
+                numBatches = 10,
+                tasksPerBatch = largeProducerBatchSize,
+                millisBetweenBatches = 1000L,
+                taskDurationMillis = 1L,
+                throttle = throttle,
+                taskRunTracker = bigProducerTracker
+            )
+        }
 
         val smallProducers = List(numSmallProducers) {
             Producer(
@@ -62,19 +67,62 @@ class RunBenchmark(
             )
         }
 
-        return smallProducers + bigProducer
+        return bigProducers + smallProducers
     }
 
     companion object {
         @JvmStatic
         fun main(args: Array<String>) {
-            val numSmallProducers = 100
-            val runBenchmark = RunBenchmark( SeparateThreadPoolsWorkDispatcher( 10), numSmallProducers)
-            runBenchmark.run()
-            val runBenchmark2 = RunBenchmark( ElasticThreadPoolWorkDispatcher(5, 500), numSmallProducers)
-            runBenchmark2.run()
+            val dispatcherType = DispatcherType.valueOf(args[0].toUpperCase())
+            val targetThreadCount = 1000
 
+            val numLargeProducers = 5
+            val numSmallProducers = 1000
+
+            val largeProducerBatchSize = 1000
+
+            val throttleSize = 50
+            val workDispatcher = createDispatcher(
+                dispatcherType = dispatcherType,
+                targetThreadCount = targetThreadCount,
+                partitionCount = numLargeProducers + numSmallProducers
+            )
+            val runBenchmark = RunBenchmark(
+                workDispatcher = workDispatcher,
+                numLargeProducers = numLargeProducers,
+                numSmallProducers = numSmallProducers,
+                throttleSize = throttleSize,
+                largeProducerBatchSize = largeProducerBatchSize
+            )
+            runBenchmark.run()
         }
+
+        private fun createDispatcher(
+            dispatcherType: DispatcherType,
+            targetThreadCount: Int,
+            partitionCount: Int
+        ): WorkDispatcher<String> {
+            return when (dispatcherType) {
+                DispatcherType.SEPARATE_THREAD_POOLS -> SeparateThreadPoolsWorkDispatcher(
+                    poolSizePerPartitionKey = ceilDivide(targetThreadCount, partitionCount)
+                )
+                DispatcherType.ELASTIC_THREAD_POOL -> {
+                    val perPartition = 3
+                    val remaining = targetThreadCount - (perPartition*partitionCount)
+                    ElasticThreadPoolWorkDispatcher(perPartition, remaining)
+                }
+            }
+        }
+
+        private fun ceilDivide(numer: Int, denom: Int): Int {
+            val div = numer / denom
+            return if ((div * denom) < numer) (div+1) else div
+        }
+    }
+
+    enum class DispatcherType {
+        SEPARATE_THREAD_POOLS,
+        ELASTIC_THREAD_POOL
     }
 }
 
